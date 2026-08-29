@@ -31,8 +31,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             LocalDateTime start, LocalDateTime end, String keyword);
 
     // Sum of all expense amounts with expenseDate <= given timestamp ("total to date")
-    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.expenseDate <= :asOf")
-    BigDecimal sumAmountUpTo(@Param("asOf") LocalDateTime asOf);
+    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e")
+    BigDecimal sumAmount();
+
 
     // Sum of amounts within a date range (used for monthly total)
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.expenseDate >= :start AND e.expenseDate < :end")

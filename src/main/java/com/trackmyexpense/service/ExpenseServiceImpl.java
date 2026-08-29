@@ -134,9 +134,14 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     @Transactional(readOnly = true)
     public TotalResponse getTotalToDate() {
-        BigDecimal total = expenseRepository.sumAmountUpTo(LocalDateTime.now());
-        return TotalResponse.builder().total(total).build();
+        BigDecimal total = expenseRepository.sumAmount();
+
+        return TotalResponse.builder()
+                .total(total)
+                .build();
     }
+
+
 
     // ---------- helpers ----------
 
