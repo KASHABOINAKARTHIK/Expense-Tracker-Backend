@@ -1,0 +1,48 @@
+HELP.md
+
+# Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Java compiled files
+*.class
+
+# Eclipse / STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Build directories
+build/
+
+# VS Code
+.vscode/
+
+# Generated Eclipse/build output
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
