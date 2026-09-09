@@ -39,18 +39,6 @@ public class EmailService {
         this.fromEmail = fromEmail;
         this.fromName = fromName;
         this.restTemplate = new RestTemplate();
-        
-        log.info("Brevo API key configured: {}",
-                apiKey != null && !apiKey.isBlank());
-
-        log.info("Brevo API key starts correctly: {}",
-                apiKey != null && apiKey.startsWith("xkeysib-"));
-
-        log.info("Brevo API key length: {}",
-                apiKey != null ? apiKey.length() : 0);
-
-        log.info("Brevo from email: {}", fromEmail);
-
 
     }
 
