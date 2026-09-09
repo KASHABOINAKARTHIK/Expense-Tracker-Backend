@@ -9,42 +9,43 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
-    // Fetch expenses within a date range (used for month filtering), newest first
-    List<Expense> findByExpenseDateBetweenOrderByExpenseDateDesc(
-            LocalDateTime start, LocalDateTime end);
+    // Every query is scoped to userId so one user can never see/modify another's data.
 
-    // Fetch expenses within a date range AND matching category
-    List<Expense> findByExpenseDateBetweenAndCategoryOrderByExpenseDateDesc(
-            LocalDateTime start, LocalDateTime end, ExpenseCategory category);
+    Optional<Expense> findByIdAndUserId(Long id, Long userId);
 
-    // Fetch all expenses matching category only (no date range)
-    List<Expense> findByCategoryOrderByExpenseDateDesc(ExpenseCategory category);
+    List<Expense> findByUserIdAndExpenseDateBetweenOrderByExpenseDateDesc(
+            Long userId, LocalDateTime start, LocalDateTime end);
 
-    // Fetch all expenses, newest first (default listing)
-    List<Expense> findAllByOrderByExpenseDateDesc();
+    List<Expense> findByUserIdAndExpenseDateBetweenAndCategoryOrderByExpenseDateDesc(
+            Long userId, LocalDateTime start, LocalDateTime end, ExpenseCategory category);
 
-    // Case-insensitive description search within a date range
-    List<Expense> findByExpenseDateBetweenAndDescriptionContainingIgnoreCaseOrderByExpenseDateDesc(
-            LocalDateTime start, LocalDateTime end, String keyword);
+    List<Expense> findByUserIdAndCategoryOrderByExpenseDateDesc(Long userId, ExpenseCategory category);
 
-    // Sum of all expense amounts with expenseDate <= given timestamp ("total to date")
-    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e")
-    BigDecimal sumAmount();
+    List<Expense> findByUserIdOrderByExpenseDateDesc(Long userId);
 
+    List<Expense> findByUserIdAndExpenseDateBetweenAndDescriptionContainingIgnoreCaseOrderByExpenseDateDesc(
+            Long userId, LocalDateTime start, LocalDateTime end, String keyword);
 
-    // Sum of amounts within a date range (used for monthly total)
-    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.expenseDate >= :start AND e.expenseDate < :end")
-    BigDecimal sumAmountBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    // Sum of all of this user's expenses ("total to date")
+    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.user.id = :userId")
+    BigDecimal sumAmount(@Param("userId") Long userId);
 
-    // Category-wise sums within a date range - used for the monthly summary/dashboard breakdown
+    // Sum of this user's amounts within a date range (used for monthly total)
+    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e " +
+           "WHERE e.user.id = :userId AND e.expenseDate >= :start AND e.expenseDate < :end")
+    BigDecimal sumAmountBetween(
+            @Param("userId") Long userId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    // Category-wise sums within a date range, scoped to this user - powers the monthly dashboard breakdown
     @Query("SELECT e.category AS category, COALESCE(SUM(e.amount), 0) AS total " +
-           "FROM Expense e WHERE e.expenseDate >= :start AND e.expenseDate < :end " +
+           "FROM Expense e WHERE e.user.id = :userId AND e.expenseDate >= :start AND e.expenseDate < :end " +
            "GROUP BY e.category")
     List<CategoryTotalProjection> sumAmountByCategoryBetween(
-            @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+            @Param("userId") Long userId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     /**
      * Projection interface for the category-wise GROUP BY query above.

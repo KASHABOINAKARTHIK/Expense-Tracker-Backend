@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
         name = "expenses",
         indexes = {
                 @Index(name = "idx_expenses_expense_date", columnList = "expense_date"),
-                @Index(name = "idx_expenses_category", columnList = "category")
+                @Index(name = "idx_expenses_category", columnList = "category"),
+                @Index(name = "idx_expenses_user_id", columnList = "user_id")
         }
 )
 @Data
@@ -34,6 +35,10 @@ public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
