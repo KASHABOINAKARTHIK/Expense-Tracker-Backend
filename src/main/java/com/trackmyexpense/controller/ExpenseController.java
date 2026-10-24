@@ -12,6 +12,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+
 import java.util.List;
 
 @RestController
@@ -37,11 +42,12 @@ public class ExpenseController {
     // GET /api/expenses?month=2026-08&category=FOOD&search=lunch
     // All query params are optional and can be combined.
     @GetMapping
-    public ResponseEntity<List<ExpenseResponse>> getExpenses(
+    public ResponseEntity<Page<ExpenseResponse>> getExpenses(
             @RequestParam(required = false) String month,
             @RequestParam(required = false) ExpenseCategory category,
-            @RequestParam(required = false) String search) {
-        return ResponseEntity.ok(expenseService.getExpenses(month, category, search));
+            @RequestParam(required = false) String search,
+            @PageableDefault(size = 20, sort = "expenseDate", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(expenseService.getExpenses(month, category, search, pageable));
     }
 
     // PUT /api/expenses/{id}
