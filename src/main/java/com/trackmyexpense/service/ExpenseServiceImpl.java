@@ -22,6 +22,9 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 /**
  * Every method here operates only on the currently authenticated user's data.
  * The user id comes from CurrentUserProvider (reads it off the JWT-backed
@@ -64,9 +67,9 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExpenseResponse> getExpenses(String month, ExpenseCategory category, String search) {
+    public Page<ExpenseResponse> getExpenses(String month, ExpenseCategory category, String search, Pageable pageable) {
         Long userId = currentUserProvider.getCurrentUserId();
-        List<Expense> expenses;
+        Page<Expense> expensesPage;
 
         if (month != null && !month.isBlank()) {
             YearMonth yearMonth = parseYearMonth(month);
@@ -74,26 +77,25 @@ public class ExpenseServiceImpl implements ExpenseService {
             LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
 
             if (search != null && !search.isBlank()) {
-                expenses = expenseRepository
+                expensesPage = expenseRepository
                         .findByUserIdAndExpenseDateBetweenAndDescriptionContainingIgnoreCaseOrderByExpenseDateDesc(
-                                userId, start, end, search);
+                                userId, start, end, search, pageable);
             } else if (category != null) {
-                expenses = expenseRepository
+                expensesPage = expenseRepository
                         .findByUserIdAndExpenseDateBetweenAndCategoryOrderByExpenseDateDesc(
-                                userId, start, end, category);
+                                userId, start, end, category, pageable);
             } else {
-                expenses = expenseRepository.findByUserIdAndExpenseDateBetweenOrderByExpenseDateDesc(
-                        userId, start, end);
+                expensesPage = expenseRepository.findByUserIdAndExpenseDateBetweenOrderByExpenseDateDesc(
+                        userId, start, end, pageable);
             }
         } else if (category != null) {
-            expenses = expenseRepository.findByUserIdAndCategoryOrderByExpenseDateDesc(userId, category);
+            expensesPage = expenseRepository.findByUserIdAndCategoryOrderByExpenseDateDesc(userId, category, pageable);
         } else {
-            expenses = expenseRepository.findByUserIdOrderByExpenseDateDesc(userId);
+            expensesPage = expenseRepository.findByUserIdOrderByExpenseDateDesc(userId, pageable);
         }
 
-        return expenses.stream().map(this::toResponse).toList();
+        return expensesPage.map(this::toResponse);
     }
-
     @Override
     public ExpenseResponse updateExpense(Long id, ExpenseRequest request) {
         Expense existing = findExpenseOrThrow(id);
