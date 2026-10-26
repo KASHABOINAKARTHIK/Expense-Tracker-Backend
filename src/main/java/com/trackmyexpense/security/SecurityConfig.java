@@ -71,7 +71,8 @@ public class SecurityConfig {
                                 "/api/auth/resend-otp",
                                 "/api/auth/login",
                                 "/api/auth/forgot-password",
-                                "/api/auth/reset-password"
+                                "/api/auth/reset-password",
+                                "/trigger/keepfreeBEactive"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
